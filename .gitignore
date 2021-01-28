@@ -1,6 +1,6 @@
 **/Debug
 **/Release
-*/x64
+**/x64
 
 # Prerequisites
 *.d
