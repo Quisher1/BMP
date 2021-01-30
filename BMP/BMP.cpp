@@ -1,37 +1,77 @@
 #include "BMP.h"
 
+
+rgba::rgba() {
+
+}
+
+rgba::rgba(int r, int g, int b, int a) : r(r), g(g), b(b), a(a) {
+
+}
+
+
 BMP::BMP() {
 
 }
 
 BMP::BMP(const std::string& imageName) {
-	std::string buffer = imageName + ".bmp";
+	loadImage("", imageName);
+}
+
+BMP::BMP(const std::string& imagePath, const std::string& imageName) {
+	loadImage(imagePath, imageName);
+}
+
+
+void BMP::loadImage(const std::string& imagePath, const std::string& imageName) {
+	std::string buffer = imagePath + imageName + ".bmp";
 
 	FILE* file;
 	file = fopen(buffer.c_str(), "rb");
+	if (file == nullptr)
+		throw std::runtime_error("ERROR::FILE_NOT_FOUND");
 
-	std::cout << file << std::endl;
 
 	info = new unsigned char[54];
 	fread(info, sizeof(unsigned char), 54, file);
 
 	//width = *(int*)&info[18];
 	//height = abs(*(int*)&info[22]);
-	//bitsPerPixel = *(int*)&info[24];
+	//bitsPerPixel = *(int*)&info[28];
 
 	width = info[18] + 256 * info[19];
 	height = info[22] + 256 * info[23];
-	bitsPerPixel = info[24] + 256 * info[25];
+	bitsPerPixel = info[28] + 256 * info[29];
 
+	
 
-	std::cout << width << " " << height << " " << bitsPerPixel << std::endl;
+	this->imageName = imageName;
+	this->imagePath = imagePath;
+
+	if (bitsPerPixel == 32) {
+		colorModel = 4;
+		offset = 0;
+	}
+	else if (bitsPerPixel == 24) {
+		colorModel = 3; 
+		offset = abs(((width * 3 + 3) & (~3)) - width * 3); 
+	}
+	else 
+		throw std::runtime_error("ERROR::THIS_BMP_ISN'T_SUPPORTED");
+
+	std::cout << "Offset: " << offset << std::endl;
+
+	data = new unsigned char[width * height * colorModel];
+	unsigned char* offsetBuffer = new unsigned char[offset];
+	int readingOffset = 0;
+	for (int i = 0; i < height; ++i) {
+		fread(data + readingOffset, sizeof(unsigned char), width * colorModel, file);
+		fread(offsetBuffer, sizeof(unsigned char), offset, file);
+		readingOffset += width * colorModel;
+	}
+	delete[] offsetBuffer;
+	fclose(file);
 }
-
-BMP::BMP(const std::string& imagePath, const std::string& imageName) {
-
-
-}
-
 
 BMP::~BMP() {
 	delete[] info;
@@ -48,11 +88,69 @@ int BMP::getWidth() const {
 int BMP::getBitsPerPixel() const {
 	return bitsPerPixel;
 }
+int BMP::getColorModel() const {
+	return colorModel;
+}
+std::string BMP::getImageName() const {
+	return imageName;
+}
+std::string BMP::getImagePath() const {
+	return imagePath;
+}
 
-
-//rgba BMP::operator()(int x, int y) const {
-//
-//}
+rgba BMP::operator()(int x, int y) const {
+	return rgba(data[(y*width + x) * colorModel + 2], data[(y*width + x) * colorModel + 1], data[(y*width + x) * colorModel + 0], colorModel == 4 ? data[(y*width + x) * colorModel + 3] : 255);
+}
 //rgba& BMP::operator()(int x, int y) {
-//
+//	return rgba(data[(y*width + x) * colorModel + 2], data[(y*width + x) * colorModel + 1], data[(y*width + x) * colorModel + 0], colorModel == 4 ? data[(y*width + x) * colorModel + 3] : 255);
 //}
+
+
+void BMP::save() {
+	if(imagePath == "")
+		saveAs(imageName);
+	else
+		saveAs(imagePath + '/' + imageName);
+}
+
+void BMP::saveAs(const std::string& newImageName) {
+
+	if (data == nullptr || info == nullptr)
+		throw std::runtime_error("ERROR::FILE_DOESN'T_EXIST");
+
+	std::string name = newImageName + ".bmp";
+
+	FILE* file;
+	file = fopen(name.c_str(), "wb"); // WARNING: ONLY 'WB', now 'W'. It will destroy image
+
+	
+
+	fwrite(info, sizeof(unsigned char), 54, file);
+
+	unsigned char* offsetBuffer = new unsigned char[offset];
+	memset(offsetBuffer, 0, offset);
+	int writingOffset = 0;
+	for (int i = 0; i < height; ++i) {
+		fwrite(data + writingOffset, sizeof(unsigned char), width * colorModel, file);
+		fwrite(offsetBuffer, sizeof(unsigned char), offset, file);
+		writingOffset += width * colorModel;
+	}
+	delete[] offsetBuffer;
+
+	offsetBuffer = new unsigned char[2];
+	memset(offsetBuffer, 0, 2);
+	fwrite(offsetBuffer, sizeof(unsigned char), 2, file);
+	delete[] offsetBuffer;
+
+	fclose(file);
+}
+
+
+void BMP::open() {
+	std::string bmp;
+	if(imagePath == "")
+		bmp = "start " + imageName + ".bmp";
+	else
+		bmp = "start " + imagePath + imageName + ".bmp";
+	system(bmp.c_str());
+}
