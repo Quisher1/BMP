@@ -5,9 +5,13 @@ rgba::rgba() {
 
 }
 
-rgba::rgba(int r, int g, int b, int a) : r(r), g(g), b(b), a(a) {
+rgba::rgba(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {
 
 }
+
+
+
+///////////////////////
 
 
 BMP::BMP() {
@@ -44,7 +48,6 @@ void BMP::loadImage(const std::string& imagePath, const std::string& imageName) 
 	bitsPerPixel = info[28] + 256 * info[29];
 
 	
-
 	this->imageName = imageName;
 	this->imagePath = imagePath;
 
@@ -74,8 +77,10 @@ void BMP::loadImage(const std::string& imagePath, const std::string& imageName) 
 }
 
 BMP::~BMP() {
-	delete[] info;
-	delete[] data;
+	if(info != nullptr)
+		delete[] info;
+	if(data != nullptr)
+		delete[] data;
 }
 
 
@@ -98,13 +103,15 @@ std::string BMP::getImagePath() const {
 	return imagePath;
 }
 
-rgba BMP::operator()(int x, int y) const {
-	return rgba(data[(y*width + x) * colorModel + 2], data[(y*width + x) * colorModel + 1], data[(y*width + x) * colorModel + 0], colorModel == 4 ? data[(y*width + x) * colorModel + 3] : 255);
+rgba BMP::getPixel(int x, int y) const {
+	return rgba(data[(y*width + x) * 3 + 2], data[(y*width + x) * 3 + 1], data[(y*width + x) * 3 + 0], colorModel == 4 ? data[(y*width + x) * 3 + 3] : 255);
 }
-//rgba& BMP::operator()(int x, int y) {
-//	return rgba(data[(y*width + x) * colorModel + 2], data[(y*width + x) * colorModel + 1], data[(y*width + x) * colorModel + 0], colorModel == 4 ? data[(y*width + x) * colorModel + 3] : 255);
-//}
-
+void BMP::setPixel(int x, int y, rgba& color) {
+	data[(y*width + x) * 3 + 2] = color.r;
+	data[(y*width + x) * 3 + 1] = color.g;
+	data[(y*width + x) * 3 + 0] = color.b;
+	if (colorModel == 4) data[(y*width + x) * 3 + 3] = color.a;
+}
 
 void BMP::save() {
 	if(imagePath == "")
@@ -153,4 +160,15 @@ void BMP::open() {
 	else
 		bmp = "start " + imagePath + imageName + ".bmp";
 	system(bmp.c_str());
+}
+
+void BMP::open(const std::string& imageName) {
+	std::string bmp;
+	bmp = "start " + imageName + ".bmp";
+	system(bmp.c_str());
+}
+
+
+void BMP::clear() {
+
 }

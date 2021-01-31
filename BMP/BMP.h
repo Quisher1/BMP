@@ -5,9 +5,15 @@
 
 class rgba {
 public:
-	int r = 0, g = 0, b = 0, a = 255;
+	unsigned char r = 0, g = 0, b = 0, a = 255;
 	rgba();
-	rgba(int r, int g, int b, int a = 255);
+	rgba(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255);
+
+
+	void operator+(rgba& p);
+	void operator-(rgba& p);
+	void operator*(rgba& p);
+	void operator/(rgba& p);
 };
 
 
@@ -26,8 +32,8 @@ public:
 	std::string getImageName() const;
 	std::string getImagePath() const;
 
-	rgba operator()(int x, int y) const;
-	//rgba& operator()(int x, int y);
+	rgba getPixel(int x, int y) const;
+	void setPixel(int x, int y, rgba& color);
 
 	void loadImage(const std::string& imagePath, const std::string& imageName);
 
@@ -35,6 +41,9 @@ public:
 	void saveAs(const std::string& newImageName);
 
 	void open();
+	void open(const std::string& imageName);
+
+	void clear();
 
 private:
 	int width = -1, height = -1;
