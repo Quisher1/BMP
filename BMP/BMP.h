@@ -3,17 +3,35 @@
 #include <string>
 #include <fstream>
 
+
+enum BMP_FORMAT {
+	NONE = -1,
+	BMP24 = 24,
+	BMP32 = 32
+};
+
+
+
 class rgba {
 public:
 	unsigned char r = 0, g = 0, b = 0, a = 255;
 	rgba();
 	rgba(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255);
 
+	rgba operator+(rgba& p);
+	rgba operator-(rgba& p);
+	rgba operator*(unsigned char k);
+	rgba operator/(unsigned char k);
 
-	void operator+(rgba& p);
-	void operator-(rgba& p);
-	void operator*(rgba& p);
-	void operator/(rgba& p);
+
+	static const rgba RED;
+	static const rgba GREEN;
+	static const rgba BLUE;
+	static const rgba YELLOW;
+	static const rgba CYAN;
+	static const rgba PURPLE;
+	static const rgba WHITE;
+	static const rgba BLACK;
 };
 
 
@@ -33,7 +51,7 @@ public:
 	std::string getImagePath() const;
 
 	rgba getPixel(int x, int y) const;
-	void setPixel(int x, int y, rgba& color);
+	void setPixel(int x, int y, rgba color);
 
 	void loadImage(const std::string& imagePath, const std::string& imageName);
 
@@ -47,7 +65,8 @@ public:
 
 private:
 	int width = -1, height = -1;
-	int bitsPerPixel = -1, colorModel = -1;
+	int colorModel = -1;
+	BMP_FORMAT bitsPerPixel = NONE;
 
 	int offset = 0;
 
@@ -59,4 +78,4 @@ private:
 };
 
 
-BMP* createBMP(int width, int height, int bitsPerPixel);
+BMP* createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format);
