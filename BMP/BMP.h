@@ -14,15 +14,17 @@ enum BMP_FORMAT {
 
 class rgba {
 public:
-	unsigned char r = 0, g = 0, b = 0, a = 255;
+	unsigned char r = 0, g = 0, b = 0, a = 0;
 	rgba();
-	rgba(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255);
+	rgba(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0);
 
-	rgba operator+(rgba& p);
-	rgba operator-(rgba& p);
-	rgba operator*(unsigned char k);
-	rgba operator/(unsigned char k);
 
+	rgba operator*(float k);
+	rgba operator/(float k);
+
+	friend rgba operator*(float k, rgba& p);
+	friend rgba operator+(const rgba& p1, const rgba& p2);
+	friend rgba operator-(const rgba& p1, const rgba& p2);
 
 	static const rgba RED;
 	static const rgba GREEN;
@@ -35,7 +37,10 @@ public:
 };
 
 
-class BMP {
+
+
+
+class BMP { // BMP saves pixel in BGR format
 public:
 	BMP();
 	explicit BMP(const std::string& imageName);
@@ -62,7 +67,8 @@ public:
 	void open(const std::string& imageName);
 
 	void clear();
-
+	unsigned char* info = nullptr;
+	unsigned char* data = nullptr;
 private:
 	int width = -1, height = -1;
 	int colorModel = -1;
@@ -73,9 +79,8 @@ private:
 	std::string imageName;
 	std::string imagePath;
 
-	unsigned char* info = nullptr;
-	unsigned char* data = nullptr;
+	
 };
 
 
-BMP* createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format);
+BMP* createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format, const rgba fillColor = rgba::WHITE);

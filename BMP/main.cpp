@@ -1,46 +1,54 @@
 #include <iostream>
-#include <string>
+#include <vector>
 #include "BMP.h"
-#include <fstream>
+
 
 using namespace std;
 
-int main() {
+#define PI 3.14159265
+#define E 2.71828284
 
+double gauss(int x, int y, float sigma = 0.84089642) { // 0.84089642 | 0.65041
+	return (pow(E, -((x*x + y*y) / (2 * sigma*sigma))) / (2 * PI*sigma*sigma));
+}
+
+
+
+void negative(BMP& image) {
+	for (int i = 0; i < image.getHeight(); ++i) {
+		for (int j = 0; j < image.getWidth(); ++j) {
+			image.setPixel(j, i, rgba::WHITE - image.getPixel(j, i));
+		}
+	}
+}
+
+void logTransformation(BMP& image, const float c = 1) {
+	float maxLog = c * 255 / log10(1 + 255);
+	for (int i = 0; i < image.getHeight(); ++i) {
+		for (int j = 0; j < image.getWidth(); ++j) {
+			image.setPixel(j, i, rgba(maxLog * log10(1 + image.getPixel(j, i).r),
+									  maxLog * log10(1 + image.getPixel(j, i).g),
+									  maxLog * log10(1 + image.getPixel(j, i).b),
+									  image.getPixel(j, i).a));
+		}
+	}
+}
+
+
+int main() {
 	try {
 
-		BMP bmp("forest");
+		BMP bmp("Ocean32");
 
-		cout << "Width: " << bmp.getWidth() << "\nHeight: " << bmp.getHeight() << "\nBPP: " << bmp.getBitsPerPixel() << std::endl;
-	
-		int x = 100, y = 100;
-		//cout << bmp(x, y).r << " " << bmp(x, y).g << " " << bmp(x, y).b << endl;
+		bmp.saveAs("temp");
+
+		bmp.loadImage("", "temp");
+
+		logTransformation(bmp, 1);
+
+		bmp.save();
+		bmp.open();
 		
-		rgba pixel = bmp.getPixel(x, y);
-		cout << int(pixel.r) << " " << int(pixel.g) << " " << int(pixel.b) << " " << int(pixel.a) << endl;
-
-		for (int i = 0; i < 100; ++i) {
-			for (int j = 0; j < 100; ++j) {
-				bmp.setPixel(x + j, y + i, bmp.getPixel(x + j, y + i));
-			}
-		}
-
-		bmp.saveAs("newImage");
-		bmp.open("newImage");
-
-
-		BMP *white = createBMP(500, 750, "", "white2", BMP24);
-		
-
-		for (int i = 0; i < bmp.getHeight() / 2; ++i) {
-			for (int j = 0; j < bmp.getWidth(); ++j) {
-				white->setPixel(j, i, rgba::PURPLE);
-			}
-		}
-		white->save();
-		white->open();
-
-
 	}
 	catch (std::runtime_error &err) {
 		cout << err.what() << endl;

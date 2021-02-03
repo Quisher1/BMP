@@ -1,38 +1,37 @@
 #include "BMP.h"
 
 
-
 rgba::rgba() {
 
 }
 rgba::rgba(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {
 
 }
-rgba rgba::operator+(rgba& p) {
-	return rgba(r + p.r > 255 ? 255 : r + p.r,
-				g + p.g > 255 ? 255 : g + p.g, 
-				b + p.b > 255 ? 255 : b + p.b, 
-				a + p.a > 255 ? 255 : a + p.a);
-}
-rgba rgba::operator-(rgba& p) {
-	return rgba(r - p.r < 0 ? 0 : r - p.r,
-				g - p.g < 0 ? 0 : g - p.g,
-				b - p.b < 0 ? 0 : b - p.b,
-				a - p.a < 0 ? 0 : a - p.a);
-}
-rgba rgba::operator*(unsigned char k) {
+
+rgba rgba::operator*(float k) {
 	return rgba(r * k > 255 ? 255 : r * k,
 				g * k > 255 ? 255 : g * k,
 				b * k > 255 ? 255 : b * k,
 				a * k > 255 ? 255 : a * k);
 }
-rgba rgba::operator/(unsigned char k) {
+rgba rgba::operator/(float k) {
 	if (k == 0)
-		return rgba(255, 255, 255, 255);
+		return rgba(255, 255, 255, 0);
 
 	return rgba(r / k, g / k, b / k, a / k);
 }
-
+rgba operator*(float k, rgba& p) {
+	return rgba(p.r * k > 255 ? 255 : p.r * k,
+				p.g * k > 255 ? 255 : p.g * k,
+				p.b * k > 255 ? 255 : p.b * k,
+				p.a * k > 255 ? 255 : p.a * k);
+}
+rgba operator+(const rgba& p1, const rgba& p2) {
+	return rgba(p1.r + p2.r, p1.g + p2.g, p1.b + p2.b, p1.a + p2.a);
+}
+rgba operator-(const rgba& p1, const rgba& p2) {
+	return rgba(p1.r - p2.r, p1.g - p2.g, p1.b - p2.b, p1.a - p2.a);
+}
 
 const rgba rgba::RED(255, 0, 0);
 const rgba rgba::GREEN(0, 255, 0);
@@ -58,6 +57,12 @@ BMP::BMP(const std::string& imagePath, const std::string& imageName) {
 
 
 void BMP::loadImage(const std::string& imagePath, const std::string& imageName) {
+	if (info != nullptr)
+		delete[] info;
+	if (data != nullptr)
+		delete[] data;
+
+
 	std::string buffer = imagePath + imageName + ".bmp";
 
 	FILE* file;
@@ -71,12 +76,11 @@ void BMP::loadImage(const std::string& imagePath, const std::string& imageName) 
 
 	//width = *(int*)&info[18];
 	//height = abs(*(int*)&info[22]);
-	//bitsPerPixel = *(int*)&info[28];
+	//bitsPerPixel = (BMP_FORMAT)(*(int*)&info[28]);
 
 	width = info[18] + 256 * info[19];
 	height = info[22] + 256 * info[23];
 	bitsPerPixel = (BMP_FORMAT)(info[28] + 256 * info[29]);
-
 	
 	this->imageName = imageName;
 	this->imagePath = imagePath;
@@ -90,9 +94,7 @@ void BMP::loadImage(const std::string& imagePath, const std::string& imageName) 
 		offset = abs(((width * 3 + 3) & (~3)) - width * 3); 
 	}
 	else 
-		throw std::runtime_error("ERROR::THIS_BMP_ISN'T_SUPPORTED");
-
-	std::cout << "Offset: " << offset << std::endl;
+		throw std::runtime_error("ERROR::LOAD_IMAGE::THIS_BMP_ISN'T_SUPPORTED");
 
 	data = new unsigned char[width * height * colorModel];
 	unsigned char* offsetBuffer = new unsigned char[offset];
@@ -103,6 +105,7 @@ void BMP::loadImage(const std::string& imagePath, const std::string& imageName) 
 		readingOffset += width * colorModel;
 	}
 	delete[] offsetBuffer;
+
 	fclose(file);
 }
 
@@ -135,18 +138,18 @@ std::string BMP::getImagePath() const {
 
 rgba BMP::getPixel(int x, int y) const {
 	if (x < 0 || y < 0 || x >= width || y >= height)
-		throw std::runtime_error("ERROR::INDEXES_OUT_OF_RANGE");
+		throw std::runtime_error("ERROR::GET_PIXEL::INDEX_OUT_OF_RANGE");
 
-	return rgba(data[(y*width + x) * 3 + 2], data[(y*width + x) * 3 + 1], data[(y*width + x) * 3 + 0], colorModel == 4 ? data[(y*width + x) * 3 + 3] : 255);
+	return rgba(data[(y*width + x) * colorModel + 2], data[(y*width + x) * colorModel + 1], data[(y*width + x) * colorModel + 0], colorModel == 4 ? data[(y*width + x) * colorModel + 3] : 0);
 }
 void BMP::setPixel(int x, int y, rgba color) {
 	if (x < 0 || y < 0 || x >= width || y >= height)
-		throw std::runtime_error("ERROR::INDEXES_OUT_OF_RANGE");
+		throw std::runtime_error("ERROR::SET_PIXEL::INDEX_OUT_OF_RANGE");
 
-	data[(y*width + x) * 3 + 2] = color.r;
-	data[(y*width + x) * 3 + 1] = color.g;
-	data[(y*width + x) * 3 + 0] = color.b;
-	if (colorModel == 4) data[(y*width + x) * 3 + 3] = color.a;
+	data[(y*width + x) * colorModel + 2] = color.r;
+	data[(y*width + x) * colorModel + 1] = color.g;
+	data[(y*width + x) * colorModel + 0] = color.b;
+	if (colorModel == 4) data[(y*width + x) * colorModel + 3] = color.a;
 }
 
 void BMP::save() {
@@ -159,14 +162,12 @@ void BMP::save() {
 void BMP::saveAs(const std::string& newImageName) {
 
 	if (data == nullptr || info == nullptr)
-		throw std::runtime_error("ERROR::FILE_DOESN'T_EXIST");
+		throw std::runtime_error("ERROR::SAVEAS::FILE_DOESN'T_EXIST");
 
 	std::string name = newImageName + ".bmp";
 
 	FILE* file;
-	file = fopen(name.c_str(), "wb"); // WARNING: ONLY 'WB', now 'W'. It will destroy image
-
-	
+	file = fopen(name.c_str(), "wb"); // WARNING: ONLY 'WB', not 'W'. It will create broken image
 
 	fwrite(info, sizeof(unsigned char), 54, file);
 
@@ -222,7 +223,10 @@ void BMP::clear() {
 }
 
 
-BMP* createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format) {
+BMP* createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format, const rgba fillColor) {
+	
+	std::cout << "color: " << int(fillColor.r) << " " << int(fillColor.g) << " " << int(fillColor.b) << " " << int(fillColor.a) << std::endl;
+
 	if (format == NONE)
 		return nullptr;
 
@@ -243,12 +247,10 @@ BMP* createBMP(const int width, const int height, const std::string& imagePath, 
 	if (format == 24)
 		offset = abs(((width * 3 + 3) & (~3)) - width * 3);
 
+	int colorModel = (format == BMP24 ? 3 : 4);
 
 	unsigned char* info = new unsigned char[54];
 	memset(info, 0, 54);
-
-	unsigned char* data = new unsigned char[width * height * (format == BMP24 ? 3 : 4) + offset*height + 2];
-	memset(data, 0, width * height * (format == BMP24 ? 3 : 4) + offset*height + 2);
 
 
 	info[0] = unsigned char('B');
@@ -277,10 +279,10 @@ BMP* createBMP(const int width, const int height, const std::string& imagePath, 
 
 	info[30] = unsigned char(0);
 
-	info[34] = unsigned char(width*height * 3 + offset*height + 2);
-	info[35] = unsigned char((width*height * 3 + offset*height + 2) >> 8);
-	info[36] = unsigned char((width*height * 3 + offset*height + 2) >> 16);
-	info[37] = unsigned char((width*height * 3 + offset*height + 2) >> 24);
+	info[34] = unsigned char(width*height * colorModel + offset*height + 2);
+	info[35] = unsigned char((width*height * colorModel + offset*height + 2) >> 8);
+	info[36] = unsigned char((width*height * colorModel + offset*height + 2) >> 16);
+	info[37] = unsigned char((width*height * colorModel + offset*height + 2) >> 24);
 
 	info[38] = unsigned char(2834);
 	info[39] = unsigned char(2834 >> 8);
@@ -291,14 +293,34 @@ BMP* createBMP(const int width, const int height, const std::string& imagePath, 
 	info[46] = unsigned char(0);
 	info[50] = unsigned char(0);
 
-	
 	fwrite(info, sizeof(unsigned char), 54, file);
-	fwrite(data, sizeof(unsigned char), width * height * (format == BMP24 ? 3 : 4) + offset*height + 2, file);
+
+
+	unsigned char* data = new unsigned char[width * height * colorModel];
+	unsigned char* offsetBuffer = new unsigned char[offset];
+	memset(offsetBuffer, 0, offset);
+
+	int readingOffset = 0;
+	for (int i = 0; i < height; ++i) {
+		for (int j = 0; j < width; j++) {
+			data[(i*width + j)*colorModel + 0] = fillColor.b;
+			data[(i*width + j)*colorModel + 1] = fillColor.g;
+			data[(i*width + j)*colorModel + 2] = fillColor.r;
+			if (colorModel == 4)
+				data[(i*width + j)*colorModel + 3] = fillColor.a;
+		}
+		fwrite(data + readingOffset, sizeof(unsigned char), width * colorModel, file);
+		fwrite(offsetBuffer, sizeof(unsigned char), offset, file);
+		readingOffset += width * colorModel;
+	}
+	delete[] offsetBuffer;
+	offsetBuffer = new unsigned char[2];
+	memset(offsetBuffer, 0, 2);
+	fwrite(offsetBuffer, sizeof(unsigned char), 2, file);
+	delete[] offsetBuffer;
 
 	fclose(file);
 
 	BMP* bmp = new BMP(imagePath, imageName);
-
-
 	return bmp;
 }
