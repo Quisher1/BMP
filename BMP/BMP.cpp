@@ -20,7 +20,7 @@ rgba rgba::operator/(float k) {
 
 	return rgba(r / k, g / k, b / k, a / k);
 }
-rgba operator*(float k, rgba& p) {
+rgba operator*(const float k, const rgba& p) {
 	return rgba(p.r * k > 255 ? 255 : p.r * k,
 				p.g * k > 255 ? 255 : p.g * k,
 				p.b * k > 255 ? 255 : p.b * k,
@@ -137,8 +137,10 @@ std::string BMP::getImagePath() const {
 }
 
 rgba BMP::getPixel(int x, int y) const {
-	if (x < 0 || y < 0 || x >= width || y >= height)
+	if (x < 0 || y < 0 || x >= width || y >= height) {
+		std::cout << x << " " << y << std::endl;
 		throw std::runtime_error("ERROR::GET_PIXEL::INDEX_OUT_OF_RANGE");
+	}
 
 	return rgba(data[(y*width + x) * colorModel + 2], data[(y*width + x) * colorModel + 1], data[(y*width + x) * colorModel + 0], colorModel == 4 ? data[(y*width + x) * colorModel + 3] : 0);
 }

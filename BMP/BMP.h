@@ -22,7 +22,7 @@ public:
 	rgba operator*(float k);
 	rgba operator/(float k);
 
-	friend rgba operator*(float k, rgba& p);
+	friend rgba operator*(const float k, const rgba& p);
 	friend rgba operator+(const rgba& p1, const rgba& p2);
 	friend rgba operator-(const rgba& p1, const rgba& p2);
 
