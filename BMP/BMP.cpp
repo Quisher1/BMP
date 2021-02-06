@@ -4,8 +4,16 @@
 rgba::rgba() {
 
 }
-rgba::rgba(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {
-
+rgba::rgba(int color) : a(0) {
+	this->r = color > 255 ? 255 : color < 0 ? 0 : color;
+	this->g = color > 255 ? 255 : color < 0 ? 0 : color;
+	this->b = color > 255 ? 255 : color < 0 ? 0 : color;
+}
+rgba::rgba(int r, int g, int b, int a) {
+	this->r = r > 255 ? 255 : r < 0 ? 0 : r;
+	this->g = g > 255 ? 255 : g < 0 ? 0 : g;
+	this->b = b > 255 ? 255 : b < 0 ? 0 : b;
+	this->a = a > 255 ? 255 : a < 0 ? 0 : a;
 }
 
 rgba rgba::operator*(float k) {

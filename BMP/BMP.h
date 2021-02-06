@@ -16,7 +16,8 @@ class rgba {
 public:
 	unsigned char r = 0, g = 0, b = 0, a = 0;
 	rgba();
-	rgba(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0);
+	rgba(int color);
+	rgba(int r, int g, int b, int a = 0);
 
 
 	rgba operator*(float k);

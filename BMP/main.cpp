@@ -2,7 +2,7 @@
 #include <vector>
 #include <cmath>
 #include "BMP.h"
-
+#include <random>
 
 using namespace std;
 
@@ -14,7 +14,8 @@ double gauss(int x, int y, float sigma = 0.84089642) { // 0.84089642 | 0.65041
 }
 
 
-void Mult(BMP& image, float** core, int width, int height) {
+
+void blur(BMP& image, float** core, int width, int height) {
 	if (width % 2 == 0 || height % 2 == 0)
 		throw runtime_error("indices must be odd");
 
@@ -78,6 +79,26 @@ double convert(double value, double From1, double From2, double To1, double To2)
 	return (value - From1) / (From2 - From1)*(To2 - To1) + To1;
 }
 
+void addNoise(BMP &image, float mean = 0.f, float stddiv = 3.16f) { // Gaussian noise
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::normal_distribution<float> d(mean, stddiv);
+
+	rgba color;
+	int rand;
+	for (int i = 0; i < image.getHeight(); ++i) {
+		for (int j = 0; j < image.getWidth(); ++j) {
+			rand = d(gen);
+			rgba c = image.getPixel(j, i);
+			color = rgba(c.r + rand, c.g + rand, c.b + rand, c.a);			
+			image.setPixel(j, i, color);
+		}
+	}
+}
+
+
+
 int main() {
 	try {
 
@@ -87,24 +108,34 @@ int main() {
 
 		//bmp.loadImage("", "temp");
 
-		//int n = 5, m = 5;
+		/*int n = 3, m = 3;
 
-		//float ** core = new float*[n];
-		//for (int i = 0; i < n; ++i) {
-		//	core[i] = new float[m];
-		//	for (int j = 0; j < m; ++j)
-		//		core[i][j] = gauss(j - m / 2, i - n / 2, 10);
-		//}
+		float ** core = new float*[n];
+		for (int i = 0; i < n; ++i) {
+			core[i] = new float[m];
+			for (int j = 0; j < m; ++j)
+				core[i][j] = gauss(j - m / 2, i - n / 2);
+		}*/
 
 
-		//Mult(bmp, core, m, n);
+		//blur(bmp, core, m, n);
 
 		////logTransformation(bmp, 1);
 
 		//bmp.save();
 		//bmp.open();
 
-		float d = 0;
+
+
+		BMP bmp("forest");
+
+		addNoise(bmp, 0, 10);
+		bmp.saveAs("blackTemp");
+		bmp.open("blackTemp");
+;
+
+
+		/*float d = 0;
 		int n = 100, m = 100;
 		float ** core = new float*[n];
 		for (int i = 0; i < n; ++i) {
@@ -126,7 +157,7 @@ int main() {
 			}
 		}
 		image->save();
-		image->open();
+		image->open();*/
 	}
 	catch (std::runtime_error &err) {
 		cout << err.what() << endl;
