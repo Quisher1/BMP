@@ -49,6 +49,10 @@ public:
 	~BMP();
 
 
+	BMP(const BMP& image);
+	void operator=(const BMP& image);
+
+
 	int getHeight() const;
 	int getWidth() const;
 	int getBitsPerPixel() const;
@@ -65,11 +69,9 @@ public:
 	void saveAs(const std::string& newImageName);
 
 	void open();
-	void open(const std::string& imageName);
 
 	void clear();
-	unsigned char* info = nullptr;
-	unsigned char* data = nullptr;
+	
 private:
 	int width = -1, height = -1;
 	int colorModel = -1;
@@ -80,8 +82,9 @@ private:
 	std::string imageName;
 	std::string imagePath;
 
-	
+	unsigned char* info = nullptr;
+	unsigned char* data = nullptr;
 };
 
-
+void open(const std::string& imageName);
 BMP* createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format, const rgba fillColor = rgba::WHITE);

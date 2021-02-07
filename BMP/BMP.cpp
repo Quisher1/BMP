@@ -62,6 +62,57 @@ BMP::BMP(const std::string& imageName) {
 BMP::BMP(const std::string& imagePath, const std::string& imageName) {
 	loadImage(imagePath, imageName);
 }
+BMP::~BMP() {
+	if (info != nullptr)
+		delete[] info;
+	if (data != nullptr)
+		delete[] data;
+}
+
+BMP::BMP(const BMP& image) {
+	width = image.width;
+	height = image.height;
+	colorModel = image.colorModel;
+	bitsPerPixel = image.bitsPerPixel;
+
+	offset = image.offset;
+
+	imageName = image.imageName;
+	imagePath = image.imagePath;
+
+	data = new unsigned char[width * height * colorModel];
+	info = new unsigned char[54];
+
+	memcpy(data, image.data, width * height * colorModel);
+	memcpy(info, image.info, 54);
+}
+
+void BMP::operator=(const BMP& image) {
+	if (this == &image)
+		throw std::runtime_error("ERROR::ASSIGNING_AN_OBJECT_TO_ITSELF");
+	
+	if (info != nullptr)
+		delete[] info;
+	if (data != nullptr)
+		delete[] data;
+
+	width = image.width;
+	height = image.height;
+	colorModel = image.colorModel;
+	bitsPerPixel = image.bitsPerPixel;
+
+	offset = image.offset;
+
+	imageName = image.imageName;
+	imagePath = image.imagePath;
+
+	
+	data = new unsigned char[width * height * colorModel];
+	info = new unsigned char[54];
+
+	memcpy(data, image.data, width * height * colorModel);
+	memcpy(info, image.info, 54);
+}
 
 
 void BMP::loadImage(const std::string& imagePath, const std::string& imageName) {
@@ -116,14 +167,6 @@ void BMP::loadImage(const std::string& imagePath, const std::string& imageName) 
 
 	fclose(file);
 }
-
-BMP::~BMP() {
-	if(info != nullptr)
-		delete[] info;
-	if(data != nullptr)
-		delete[] data;
-}
-
 
 int BMP::getHeight() const {
 	return height;
@@ -209,12 +252,6 @@ void BMP::open() {
 	system(bmp.c_str());
 }
 
-void BMP::open(const std::string& imageName) {
-	std::string bmp;
-	bmp = "start " + imageName + ".bmp";
-	system(bmp.c_str());
-}
-
 
 void BMP::clear() {
 	width = -1;
@@ -232,7 +269,11 @@ void BMP::clear() {
 		delete[] data;
 }
 
-
+void open(const std::string& imageName) {
+	std::string bmp;
+	bmp = "start " + imageName + ".bmp";
+	system(bmp.c_str());
+}
 BMP* createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format, const rgba fillColor) {
 	
 	std::cout << "color: " << int(fillColor.r) << " " << int(fillColor.g) << " " << int(fillColor.b) << " " << int(fillColor.a) << std::endl;

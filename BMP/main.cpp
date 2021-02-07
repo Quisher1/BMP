@@ -131,8 +131,7 @@ int main() {
 
 		addNoise(bmp, 0, 10);
 		bmp.saveAs("blackTemp");
-		bmp.open("blackTemp");
-;
+		open("blackTemp");
 
 
 		/*float d = 0;
