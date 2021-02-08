@@ -189,7 +189,6 @@ std::string BMP::getImagePath() const {
 
 rgba BMP::getPixel(int x, int y) const {
 	if (x < 0 || y < 0 || x >= width || y >= height) {
-		std::cout << x << " " << y << std::endl;
 		throw std::runtime_error("ERROR::GET_PIXEL::INDEX_OUT_OF_RANGE");
 	}
 
@@ -275,9 +274,6 @@ void open(const std::string& imageName) {
 	system(bmp.c_str());
 }
 BMP* createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format, const rgba fillColor) {
-	
-	std::cout << "color: " << int(fillColor.r) << " " << int(fillColor.g) << " " << int(fillColor.b) << " " << int(fillColor.a) << std::endl;
-
 	if (format == NONE)
 		return nullptr;
 

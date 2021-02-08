@@ -3,6 +3,7 @@
 #include <cmath>
 #include "BMP.h"
 #include <random>
+#include <algorithm>
 
 using namespace std;
 
@@ -98,6 +99,122 @@ void addNoise(BMP &image, float mean = 0.f, float stddiv = 3.16f) { // Gaussian 
 }
 
 
+//BMP seemCarving(const BMP& image) {
+//	BMP energy = image;
+//
+//	int r, g, b, k = 0;
+//
+//	for (int i = 0; i < image.getHeight(); ++i) {
+//		for (int j = 0; j < image.getWidth(); ++j) {
+//			r = g = b = k = 0;
+//			if (i != 0) {
+//				r += abs(image.getPixel(j, i).r - image.getPixel(j, i - 1).r);
+//				g += abs(image.getPixel(j, i).g - image.getPixel(j, i - 1).g);
+//				b += abs(image.getPixel(j, i).b - image.getPixel(j, i - 1).b);
+//				k++;
+//			}
+//			if (j != 0) {
+//				r += abs(image.getPixel(j, i).r - image.getPixel(j - 1, i).r);
+//				g += abs(image.getPixel(j, i).g - image.getPixel(j - 1, i).g);
+//				b += abs(image.getPixel(j, i).b - image.getPixel(j - 1, i).b);
+//				k++;
+//			}
+//			
+//			if (k != 0) {
+//				r /= k;
+//				g /= k;
+//				b /= k;
+//			}
+//			energy.setPixel(j, i, rgba(r+g+b));
+//		}
+//	}
+//
+//
+//	//energy.saveAs("energy");
+//	//open("energy");
+//
+//
+//	vector<vector<int>> matrix(image.getHeight(), vector<int>(image.getWidth(), 0));
+//
+//	for (int i = 0; i < image.getWidth(); ++i) {
+//		matrix[energy.getHeight() - 1][i] = energy.getPixel(i, energy.getHeight() - 1).r;
+//	}
+//
+//	int minV;
+//
+//	for (int i = energy.getHeight() - 2; i > 0; --i) {
+//		for (int j = 0; j < energy.getWidth(); ++j) {
+//			minV = matrix[i + 1][j];
+//			if(j != 0) minV = min(minV, matrix[i + 1][j - 1]);
+//			if(j != energy.getWidth() - 1) minV = min(minV, matrix[i + 1][j + 1]);
+//			matrix[i][j] = energy.getPixel(j, i).r + minV;
+//		}
+//	}
+//
+//	int minIndex = 0;
+//	minV = matrix[0][0];
+//	for (int i = 1; i < energy.getWidth(); ++i) {
+//		if (matrix[0][i] < minV) {
+//			minV = matrix[0][i];
+//			minIndex = i;
+//		}
+//	}
+//
+//	int x = minIndex, y = 0;
+//	int newx = minIndex, newy = 0;
+//	
+//	while (y + 1 != energy.getHeight()) {
+//		minV = matrix[y + 1][x];
+//		newx = x;
+//		newy = y + 1;
+//
+//		if (x != 0) { 
+//			if (matrix[y + 1][x - 1] < minV) {
+//				minV = matrix[y + 1][x - 1];
+//				newx = x - 1;
+//			}
+//		}
+//		if (x != energy.getWidth() - 1) { 
+//			if (matrix[y + 1][x + 1] < minV) {
+//				minV = matrix[y + 1][x + 1];
+//				newx = x + 1;
+//			}
+//		}
+//		matrix[y][x] = -1;
+//		//matrix[y].erase(matrix[y].begin() + x);
+//
+//		x = newx;
+//		y = newy;
+//	}
+//
+//	matrix[y][x] = -1;
+//
+//	auto newBMP = *createBMP(image.getWidth() - 1, image.getHeight(), "", "newBMP", BMP24);
+//
+//	int tempi = 0, tempj = 0;
+//
+//
+//	for (int i = 0; i < image.getHeight(); ++i) {
+//		tempj = 0;
+//		tempi = i;
+//		for (int j = 0; j < image.getWidth() - 1; ++j) {
+//			if (matrix[i][j] != -1) {
+//				newBMP.setPixel(j, tempi, image.getPixel(tempj, tempi));
+//				tempj++;
+//			}
+//			else {
+//				newBMP.setPixel(j, tempi, image.getPixel(tempj + 1, tempi));
+//				tempj+=2;
+//			}
+//			
+//		}
+//	}
+//
+//	//newBMP.save();
+//
+//	return newBMP;
+//}
+
 
 int main() {
 	try {
@@ -126,9 +243,7 @@ int main() {
 		//bmp.open();
 
 
-
-		BMP bmp("forest");
-
+		BMP bmp("castle");
 		addNoise(bmp, 0, 10);
 		bmp.saveAs("blackTemp");
 		open("blackTemp");
