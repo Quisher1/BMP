@@ -14,7 +14,13 @@ double gauss(int x, int y, float sigma = 0.84089642) { // 0.84089642 | 0.65041
 	return (pow(E, -((x*x + y*y) / (2 * sigma*sigma))) / (2 * PI*sigma*sigma));
 }
 
-
+void grayscale(BMP& image) {
+	for (int i = 0; i < image.getHeight(); ++i) {
+		for (int j = 0; j < image.getWidth(); ++j) {
+			image.setPixel(j, i, rgba(0.2627*image.getPixel(j, i).r + 0.6780*image.getPixel(j, i).g + 0.0593*image.getPixel(j, i).b));
+		}
+	}
+}
 
 void blur(BMP& image, float** core, int width, int height) {
 	if (width % 2 == 0 || height % 2 == 0)
@@ -243,8 +249,14 @@ int main() {
 		//bmp.open();
 
 
-		BMP bmp("castle");
+		/*BMP bmp("castle");
 		addNoise(bmp, 0, 10);
+		bmp.saveAs("blackTemp");
+		open("blackTemp");*/
+
+
+		BMP bmp("leaf");
+		grayscale(bmp);
 		bmp.saveAs("blackTemp");
 		open("blackTemp");
 
