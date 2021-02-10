@@ -14,7 +14,15 @@ double gauss(int x, int y, float sigma = 0.84089642) { // 0.84089642 | 0.65041
 	return (pow(E, -((x*x + y*y) / (2 * sigma*sigma))) / (2 * PI*sigma*sigma));
 }
 
-
+void grayscale(BMP& image) {
+	rgba color;
+	for (int i = 0; i < image.getHeight(); ++i) {
+		for (int j = 0; j < image.getWidth(); ++j) {
+			color = image.getPixel(j, i);
+			image.setPixel(j, i, rgba(color.r * 0.2627 + color.g * 0.6780 + color.b * 0.0593));
+		}
+	}
+}
 
 void blur(BMP& image, float** core, int width, int height) {
 	if (width % 2 == 0 || height % 2 == 0)
@@ -80,7 +88,7 @@ double convert(double value, double From1, double From2, double To1, double To2)
 	return (value - From1) / (From2 - From1)*(To2 - To1) + To1;
 }
 
-void addNoise(BMP &image, float mean = 0.f, float stddiv = 3.16f) { // Gaussian noise
+void noise(BMP &image, float mean = 0.f, float stddiv = 3.16f) { // Gaussian noise
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -244,7 +252,7 @@ int main() {
 
 
 		/*BMP bmp("castle");
-		addNoise(bmp, 0, 10);
+		noise(bmp, 0, 10);
 		bmp.saveAs("blackTemp");
 		open("blackTemp");*/
 
