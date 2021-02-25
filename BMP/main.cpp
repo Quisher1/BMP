@@ -107,6 +107,68 @@ void noise(BMP &image, float mean = 0.f, float stddiv = 3.16f) { // Gaussian noi
 }
 
 
+
+BMP convolution(const BMP& bmp, float** core, int width, int height) {
+	BMP result = createBMP(bmp.getWidth() - width, bmp.getHeight() - height, "", "ConvolutionSave", BMP24);
+	float sumR = 0, sumG = 0, sumB = 0;
+
+	float d = 0;
+	for (int i = 0; i < height; ++i) {
+		for (int j = 0; j < width; ++j) {
+			d += core[i][j];
+		}
+	}
+
+	for (int i = 0; i < result.getHeight(); ++i) {
+		for (int j = 0; j < result.getWidth(); ++j) {
+			sumR = sumG = sumB = 0;
+			for (int y = -height / 2; y <= height / 2; ++y) {
+				for (int x = -width / 2; x <= width / 2; ++x) {
+					sumR += core[y + height / 2][x + width / 2] * ((bmp.getPixel(j + width/2 + x, i + height/2 + y).r) / 256.f) / 3;
+					sumG += core[y + height / 2][x + width / 2] * ((bmp.getPixel(j + width/2 + x, i + height/2 + y).b) / 256.f) / 3;
+					sumB += core[y + height / 2][x + width / 2] * ((bmp.getPixel(j + width/2 + x, i + height/2 + y).b) / 256.f) / 3;
+				}
+			}
+			result.setPixel(j, i,  rgba(255 * sumR, 255 * sumG, 255 * sumB));
+		}
+	}
+	result.save();
+	return result;
+}
+
+BMP pooling(const BMP& bmp) {
+	BMP result = createBMP(bmp.getWidth()/2, bmp.getHeight()/2, "", "PoolingSave", BMP24);
+	int x = 0, y = 0;
+	int r, g, b;
+	for (int i = 0; i < result.getHeight(); ++i) {
+		for (int j = 0; j < result.getWidth(); ++j) {
+			r = g = b = 0;
+			r = std::max(r, int(bmp.getPixel(x, y).r));
+			r = std::max(r, int(bmp.getPixel(x + 1, y).r));
+			r = std::max(r, int(bmp.getPixel(x, y + 1).r));
+			r = std::max(r, int(bmp.getPixel(x + 1, y + 1).r));
+
+			g = std::max(r, int(bmp.getPixel(x, y).g));
+			g = std::max(r, int(bmp.getPixel(x + 1, y).g));
+			g = std::max(r, int(bmp.getPixel(x, y + 1).g));
+			g = std::max(r, int(bmp.getPixel(x + 1, y + 1).g));
+
+			b = std::max(r, int(bmp.getPixel(x, y).b));
+			b = std::max(r, int(bmp.getPixel(x + 1, y).b));
+			b = std::max(r, int(bmp.getPixel(x, y + 1).b));
+			b = std::max(r, int(bmp.getPixel(x + 1, y + 1).b));
+
+			x += 2;
+			result.setPixel(j, i, rgba(r, g, b));
+		}
+		x = 0;
+		y += 2;
+	}
+	result.save();
+	return result;
+}
+
+
 //BMP seemCarving(const BMP& image) {
 //	BMP energy = image;
 //
@@ -257,11 +319,41 @@ int main() {
 		open("blackTemp");*/
 
 
-		BMP bmp("leaf");
-		grayscale(bmp);
-		bmp.saveAs("blackTemp");
-		open("blackTemp");
+		///////////////
 
+		/*float **matrix = new float*[3];
+		for (int i = 0; i < 3; ++i)
+			matrix[i] = new float[3];
+
+		matrix[0][0] = 1; matrix[0][1] = 0; matrix[0][2] = 0;
+		matrix[1][0] = 0; matrix[1][1] = 1; matrix[1][2] = 0;
+		matrix[2][0] = 0; matrix[2][1] = 0; matrix[2][2] = 1;
+
+		BMP bmp("4");
+
+		BMP c = convolution(bmp, matrix, 3, 3);
+		BMP p = pooling(c);
+
+		c = convolution(p, matrix, 3, 3);
+		p = pooling(c);*/
+
+
+
+
+		BMP bmp("forest");
+
+		bmp.resize(300, 200);
+
+		bmp.saveAs("DarkSave1");
+		open("DarkSave1");
+
+		//////////////
+		/*BMP bmp("vegetables");
+		grayscale(bmp);
+
+		bmp.saveAs("blackTemp");
+		open("blackTemp");*/
+		//////////////
 
 		/*float d = 0;
 		int n = 100, m = 100;

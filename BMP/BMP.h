@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-
+#include <algorithm>
 
 enum BMP_FORMAT {
 	NONE = -1,
@@ -70,21 +70,30 @@ public:
 
 	void open();
 
+	void fill();
 	void clear();
-	
+
+	unsigned char* getData() const;
+
+
+	void resize(int height, int width);
+
+
 private:
 	int width = -1, height = -1;
 	int colorModel = -1;
 	BMP_FORMAT bitsPerPixel = NONE;
 
 	int offset = 0;
-
+	int infoLogSize = 54;
 	std::string imageName;
 	std::string imagePath;
 
+	unsigned char* header = nullptr;
 	unsigned char* info = nullptr;
 	unsigned char* data = nullptr;
 };
 
 void open(const std::string& imageName);
-BMP* createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format, const rgba fillColor = rgba::WHITE);
+BMP* createBMPDynamic(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format, const rgba fillColor = rgba::WHITE);
+BMP createBMP(const int width, const int height, const std::string& imagePath, const std::string& imageName, const BMP_FORMAT format, const rgba fillColor = rgba::WHITE);
